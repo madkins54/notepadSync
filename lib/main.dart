@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 // ignore: unnecessary_import
 import 'package:flutter/cupertino.dart';
 
-
 void main() {
   runApp(const MyApp());
 }
