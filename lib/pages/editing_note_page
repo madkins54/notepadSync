@@ -1,0 +1,121 @@
+// ignore: avoid_web_libraries_in_flutter, unused_import
+//import 'dart:html';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../models/note.dart';
+import 'package:flutter_quill/flutter_quill.dart';
+
+import '../models/note_data.dart';
+
+class EditingNotePage extends StatefulWidget {
+  final Note note;
+  final bool isNewNote;
+  const EditingNotePage({
+    super.key,
+    required this.note,
+    required this.isNewNote,
+  });
+
+  @override
+  State<EditingNotePage> createState() => _EditingNotePageState();
+}
+
+class _EditingNotePageState extends State<EditingNotePage> {
+  QuillController _controller = QuillController.basic();
+
+  get id => null;
+
+  @override
+  void initState() {
+    super.initState();
+    loadExistingNote();
+  }
+
+  //load existing note
+  void loadExistingNote() {
+    final doc = Document()..insert(0, widget.note.text);
+    setState(() {
+      _controller = QuillController(
+          document: doc, selection: const TextSelection.collapsed(offset: 0));
+    });
+  }
+
+// add a new note
+  void addNewNote() {
+    // get new id
+    int id = Provider.of<NoteData>(context, listen: false).getAllNotes().length;
+    // get text from user editor
+    String text = _controller.document.toPlainText();
+    //add the new note
+    Provider.of<NoteData>(context, listen: false).addNewNote(
+      Note(id: id, text: text),
+    );
+  }
+
+// update existing note
+  void updateNote() {
+    // get text from user editor
+    String text = _controller.document.toPlainText();
+    //update note
+    Provider.of<NoteData>(context, listen: false).updateNote(widget.note, text);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            // it's a new note
+            if (widget.isNewNote && !_controller.document.isEmpty()) {
+              addNewNote();
+            }
+
+            // existing note
+            else {
+              updateNote();
+            }
+          },
+        ),
+      ),
+      body: Column(
+        children: [
+          //toolbar
+          QuillToolbar.basic(
+            controller: _controller,
+            showAlignmentButtons: false,
+            showBackgroundColorButton: false,
+            showColorButton: false,
+            showCodeBlock: false,
+            showDirection: false,
+            showFontFamily: true,
+            showDividers: false,
+            showIndent: false,
+            showHeaderStyle: true,
+            showLink: false,
+            showSearchButton: false,
+            showInlineCode: false,
+            showQuote: false,
+            showListNumbers: true,
+            showListBullets: true,
+            showClearFormat: false,
+            showFontSize: true,
+            showItalicButton: true,
+            showUnderLineButton: true,
+            showStrikeThrough: true,
+            showListCheck: true,
+          ),
+
+          //editor
+          Expanded(
+            child: Container(
+                padding: const EdgeInsets.all(25),
+                child: QuillEditor.basic(
+                    controller: _controller, readOnly: false)),
+          ),
+        ],
+      ),
+    );
+  }
+}
